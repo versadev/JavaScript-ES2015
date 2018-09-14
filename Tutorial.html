@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">	
+	<title>ECMAScript 2015 - JavaScript Demos</title>
+		
+		<link href="css/bootstrap.css" rel="stylesheet" />
+
+    <script type="text/javascript" src="scripts/jquery-1.10.2.js"></script>
+    
+		<script>
+			
+			"use strict";
+			
+			// Define a new block
+			{
+				var t = 30; // the variable t is hoisted to global scope since it is declared by var
+				let i = 10; // the variable i has block scope (mutable variable)
+				const j = 50; // the variable j has block scope and is immutable
+				// j = 60; // Would cause an error
+				
+				console.log(i); // this is valid as i has block scope
+				console.log(j); // this is valid as j has block scope
+				
+				console.log(k); // this is valid as k is hoisted
+				
+				var k = 50; // Hoisted variables can be defined after they have been used
+				
+			}
+			
+			console.log(t); // this is valid as t has global scope
+			
+			console.log(i); // this is invalid as i is not accessible 
+			
+			
+			// Template strings
+			var firstName = "Fred";
+			var lastName = "Smith";
+			
+			var fullName = firstName + " " + lastName; // Without template string
+			
+			// Template strings start and end with a back tick, `
+			var myTemplateString1 = `${firstName} ${lastName}`;	
+					
+			console.log(myTemplateString1);
+			
+			// Template string containing an expression
+			var myTemplateString2 = `${firstName.toUpperCase()} ${lastName}`;	
+					
+			console.log(myTemplateString2);
+			
+			// Multiline template string
+			var myDoc1 = `
+			Dear ${firstName.toUpperCase()} ${lastName},
+			
+			Thank you for contacting support...
+			`;
+			
+			console.log(myDoc1);
+			
+			
+			// Arrow functions
+			
+			/* Non-Arrow Method
+			var fn = function(x,y) {
+				return x + y;
+			};
+			
+			console.log(fn(1, 2));
+			*/
+			
+			// Arrow function equivalent
+			var fn1 = (x,y) => x + y;
+			
+			console.log(fn1(1, 2));
+			
+			var fn2 = (x,y) => { return x + y; };
+			
+			console.log(fn2(1, 2));
+			
+			function outer() {
+				console.log(this);
+				
+				var inner = () => {
+					// The value of 'this' is always determined by its outside lexical scope.
+					// Lexical scope referes to the actual structure of the source code.
+					// If inner had been defined by a function (i.e. function inner() {...}), 'this' would be undefined.
+					console.log(this); // Inner method has access to the object passed to outer
+				};
+								
+				inner();
+			}
+			
+			outer.call({ id: 10 });			
+			
+			
+			// Classes - Old Syntax
+			
+			function Person1(firstName, lastName) {
+				this.firstName = firstName;
+				this.lastName = lastName;
+			}
+			
+			Person1.prototype.getFullName = function() {
+				return this.firstName + ' ' + this.lastName;
+			}
+			
+			var p1 = new Person1("Fred", "Smith");
+			console.log(p1.getFullName());
+			// Output the object (directory tree structure)
+			cosole.dir(p1);
+			console.log(typeof Person1); // Will return as function
+			
+			// Classes - New Syntax
+			
+			class Person2 {
+				
+				constructor(firstName, lastName) {
+					this.firstName = firstName;
+					this.lastName = lastName;					
+				}
+				
+				getFullName() {
+					return this.firstName + ' ' + this.lastName;
+				}
+				
+			}
+			
+			var p2 = new Person2("Fred", "Smith");
+			console.log(p2.getFullName());
+			// Output the object (directory tree structure)
+			cosole.dir(p2);			
+			console.log(typeof Person2); // Will still return as function even though it is defined as a Class.
+			
+			
+			// Classes - New Syntax With Internal Use Properties (Property Accessors).
+			// Example includes a Static function to create a new object as well as Inheritance		
+			// 	
+			class Person3 {
+				
+				constructor(firstName, lastName) {
+					// _ is a convention only used to indicate internal use only properties even though JS does not support private or protected members
+					this._firstName = firstName; 
+					this._lastName = lastName;					
+				}
+				
+				// Property Accessors
+				get firstName() {
+					console.log("get firstName");
+					return this._firstName;
+				}
+				
+				set firstName(fn) {
+					this._firstName = fn;
+				}
+				
+				get lastName() {
+					console.log("get lastName");
+					return this._lastName;
+				}
+				
+				set lastName(ln) {
+					this._lastName = ln;
+				}				
+				
+				getFullName() {
+					return this.firstName + ' ' + this.lastName;
+				}
+				
+				// Static Function
+				static create(firstName, lastName) {
+					return new Person(firstName, lastName);
+				}
+				
+			}
+			
+			class Student extends Person3 {
+				
+				constructor(studentId, firstName, lastName) {
+					super(firstName, lastName); // Student Constructor must call 'super' to set the object that Student extends.
+					this._studentId = studentId;
+				}
+				
+				get studentId() {
+					return this._studentId;
+				}
+				
+				set studentId(sid) {
+					this._studentId = sid;
+				}
+				
+				getRecordTitle() {
+					return this.studentId + " " + this.lastName + ", " + this.firstName;
+				}
+			}
+			
+			// var p3 = new Person3("Fred", "Smith");
+			// Create new object via call to Static function 
+			var p3 = Person3.create("Fred", "Smith"); 
+			console.log(p3.getFullName());
+			// Output the object (directory tree structure)
+			cosole.dir(p3);		
+			
+			// Example of Inheritance
+			var s = new Student(1, "Fred", "Smith");	
+			console.log(s.getRecordTitle());
+			console.log(s.getFullName()); // Call method from class that Student extends (Person3)
+			
+			
+			// Generators
+			
+			// Typical way of processing an array
+			/*
+				function numbers() {
+				
+				var nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+				
+				for (var t = 0; t < nums.length; t++) {
+						nums[t] = nums[t] * 2;
+				}
+				
+				return nums;
+			}
+			
+			console.dir(numbers());
+			*/
+			
+			// Using Generators
+			function* numbers() {
+				
+				var nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+				
+				for (var t = 0; t < nums.length; t++) {
+					console.log("running an iteration");
+						nums[t] = nums[t] * 2;
+						yield nums[t];
+				}
+				
+				//return nums;
+			}	
+			
+			var numGen = numbers();
+			
+			for (var num of numGen) {
+				console.log("Num: " + num);
+			}
+			
+			//console.log(numGen.next().value);								
+			//console.log(numGen.next().value);
+			//console.log(numGen.next().value);
+			//console.log(numGen.next().value);
+			//console.log(numGen.next().value);
+			
+	</script>
+
+	<body>
+
+    <div class="container body-content">
+
+      <h2>New Features In JavaScript (ES2015)</h2>
+      <p>Compiled by Warren Bullock - 21 September 2016</p>
+        						
+			Ref: https://mva.microsoft.com/en-US/training-courses/gamechanging-features-in-es2015-16640<br />
+			<br />
+			<b>Please review the JavaScript code below for examples of new features available in JavaScript (ES2015)</b>
+			<br /><br />
+			<b>Note</b>: You will need a modern Web Browser that supports ES2015 (e.g. MS Edge (Chakra), Chrome (V8, also powers Node.js)<br />
+			<b>Note</b>: To view the results of this tutorial, you will need to display the developer tools and look at the output console.<br />
+			
+			<br />
+			
+			<h2>Block Scope Example</h2>
+			 var - hoisted variable (global scope) <br />
+			 let - block scope variable, mutable <br />
+			 const - block scope variable, immutable <br />			 
+			 
+			<h2>Template Strings</h2>
+				Interpolated strings<br />
+				Template strings can span multiple lines, similar to <b>heredoc</b> capabilities<br />			
+			
+			<h2>Arrow Functions - Also Know As Lambdas</h2>	
+				Arrow functions can easily be passed as parameters to functions<br />
+				Lexical scope<br />
+				
+			<h2>Classes</h2>
+				Better syntax for function constructors<br />		
+				Supports Constructors and Inheritance<br />
+				Accessor Properties and Prototype Functions<br />
+				Static Functions defined on the Class (funtion object) itself<br />	
+				Can be used as declarations or expressions just like functions<br />
+				<br />
+				<b>Note</b>: classes are not like C++, Java or C# classes even though syntax appears similar<br />
+			
+			<h2>Generators</h2>
+				Allows you to loop over a collection and work with the values as they are generated (i.e. for each item in the collection break out and perform additional or stop processing when a condition is met).
+			
+			<h2>JavaScript Code For This Tutorial</h2>
+			<br />
+<!-- HTML generated using hilite.me -->
+<div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">		<span style="color: #333333">&lt;</span>script<span style="color: #333333">&gt;</span>
+			
+			<span style="background-color: #fff0f0">&quot;use strict&quot;</span>;
+			
+			<span style="color: #888888">// Define a new block</span>
+			{
+				<span style="color: #008800; font-weight: bold">var</span> t <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">30</span>; <span style="color: #888888">// the variable t is hoisted to global scope since it is declared by var</span>
+				<span style="color: #008800; font-weight: bold">let</span> i <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">10</span>; <span style="color: #888888">// the variable i has block scope (mutable variable)</span>
+				<span style="color: #008800; font-weight: bold">const</span> j <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">50</span>; <span style="color: #888888">// the variable j has block scope and is immutable</span>
+				<span style="color: #888888">// j = 60; // Would cause an error</span>
+				
+				console.log(i); <span style="color: #888888">// this is valid as i has block scope</span>
+				console.log(j); <span style="color: #888888">// this is valid as j has block scope</span>
+				
+				console.log(k); <span style="color: #888888">// this is valid as k is hoisted</span>
+				
+				<span style="color: #008800; font-weight: bold">var</span> k <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">50</span>; <span style="color: #888888">// Hoisted variables can be defined after they have been used</span>
+				
+			}
+			
+			console.log(t); <span style="color: #888888">// this is valid as t has global scope</span>
+			
+			console.log(i); <span style="color: #888888">// this is invalid as i is not accessible </span>
+			
+			
+			<span style="color: #888888">// Template strings</span>
+			<span style="color: #008800; font-weight: bold">var</span> firstName <span style="color: #333333">=</span> <span style="background-color: #fff0f0">&quot;Fred&quot;</span>;
+			<span style="color: #008800; font-weight: bold">var</span> lastName <span style="color: #333333">=</span> <span style="background-color: #fff0f0">&quot;Smith&quot;</span>;
+			
+			<span style="color: #008800; font-weight: bold">var</span> fullName <span style="color: #333333">=</span> firstName <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot; &quot;</span> <span style="color: #333333">+</span> lastName; <span style="color: #888888">// Without template string</span>
+			
+			<span style="color: #888888">// Template strings start and end with a back tick, `</span>
+			<span style="color: #008800; font-weight: bold">var</span> myTemplateString1 <span style="color: #333333">=</span> <span>`</span>${firstName} ${lastName}<span>`</span>;	
+					
+			console.log(myTemplateString1);
+			
+			<span style="color: #888888">// Template string containing an expression</span>
+			<span style="color: #008800; font-weight: bold">var</span> myTemplateString2 <span style="color: #333333">=</span> <span>`</span>${firstName.toUpperCase()} ${lastName}<span>`</span>;	
+					
+			console.log(myTemplateString2);
+			
+			<span style="color: #888888">// Multiline template string</span>
+			<span style="color: #008800; font-weight: bold">var</span> myDoc1 <span style="color: #333333">=</span> <span>`</span>
+			Dear ${firstName.toUpperCase()} ${lastName},
+			
+			Thank you <span style="color: #008800; font-weight: bold">for</span> contacting support...
+			<span>`</span>;
+			
+			console.log(myDoc1);
+			
+			
+			<span style="color: #888888">// Arrow functions</span>
+			
+			<span style="color: #888888">/* Non-Arrow Method</span>
+<span style="color: #888888">			var fn = function(x,y) {</span>
+<span style="color: #888888">				return x + y;</span>
+<span style="color: #888888">			};</span>
+<span style="color: #888888">			</span>
+<span style="color: #888888">			console.log(fn(1, 2));</span>
+<span style="color: #888888">			*/</span>
+			
+			<span style="color: #888888">// Arrow function equivalent</span>
+			<span style="color: #008800; font-weight: bold">var</span> fn1 <span style="color: #333333">=</span> (x,y) <span style="color: #333333">=&gt;</span> x <span style="color: #333333">+</span> y;
+			
+			console.log(fn1(<span style="color: #0000DD; font-weight: bold">1</span>, <span style="color: #0000DD; font-weight: bold">2</span>));
+			
+			<span style="color: #008800; font-weight: bold">var</span> fn2 <span style="color: #333333">=</span> (x,y) <span style="color: #333333">=&gt;</span> { <span style="color: #008800; font-weight: bold">return</span> x <span style="color: #333333">+</span> y; };
+			
+			console.log(fn2(<span style="color: #0000DD; font-weight: bold">1</span>, <span style="color: #0000DD; font-weight: bold">2</span>));
+			
+			<span style="color: #008800; font-weight: bold">function</span> outer() {
+				console.log(<span style="color: #008800; font-weight: bold">this</span>);
+				
+				<span style="color: #008800; font-weight: bold">var</span> inner <span style="color: #333333">=</span> () <span style="color: #333333">=&gt;</span> {
+					<span style="color: #888888">// The value of &#39;this&#39; is always determined by its outside lexical scope.</span>
+					<span style="color: #888888">// Lexical scope referes to the actual structure of the source code.</span>
+					<span style="color: #888888">// If inner had been defined by a function (i.e. function inner() {...}), &#39;this&#39; would be undefined.</span>
+					console.log(<span style="color: #008800; font-weight: bold">this</span>); <span style="color: #888888">// Inner method has access to the object passed to outer</span>
+				};
+								
+				inner();
+			}
+			
+			outer.call({ id<span style="color: #333333">:</span> <span style="color: #0000DD; font-weight: bold">10</span> });			
+			
+			
+			<span style="color: #888888">// Classes - Old Syntax</span>
+			
+			<span style="color: #008800; font-weight: bold">function</span> Person1(firstName, lastName) {
+				<span style="color: #008800; font-weight: bold">this</span>.firstName <span style="color: #333333">=</span> firstName;
+				<span style="color: #008800; font-weight: bold">this</span>.lastName <span style="color: #333333">=</span> lastName;
+			}
+			
+			Person1.prototype.getFullName <span style="color: #333333">=</span> <span style="color: #008800; font-weight: bold">function</span>() {
+				<span style="color: #008800; font-weight: bold">return</span> <span style="color: #008800; font-weight: bold">this</span>.firstName <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &#39;</span> <span style="color: #333333">+</span> <span style="color: #008800; font-weight: bold">this</span>.lastName;
+			}
+			
+			<span style="color: #008800; font-weight: bold">var</span> p1 <span style="color: #333333">=</span> <span style="color: #008800; font-weight: bold">new</span> Person1(<span style="background-color: #fff0f0">&quot;Fred&quot;</span>, <span style="background-color: #fff0f0">&quot;Smith&quot;</span>);
+			console.log(p1.getFullName());
+			<span style="color: #888888">// Output the object (directory tree structure)</span>
+			cosole.dir(p1);
+			console.log(<span style="color: #008800; font-weight: bold">typeof</span> Person1); <span style="color: #888888">// Will return as function</span>
+			
+			<span style="color: #888888">// Classes - New Syntax</span>
+			
+			<span style="color: #008800; font-weight: bold">class</span> Person2 {
+				
+				constructor(firstName, lastName) {
+					<span style="color: #008800; font-weight: bold">this</span>.firstName <span style="color: #333333">=</span> firstName;
+					<span style="color: #008800; font-weight: bold">this</span>.lastName <span style="color: #333333">=</span> lastName;					
+				}
+				
+				getFullName() {
+					<span style="color: #008800; font-weight: bold">return</span> <span style="color: #008800; font-weight: bold">this</span>.firstName <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &#39;</span> <span style="color: #333333">+</span> <span style="color: #008800; font-weight: bold">this</span>.lastName;
+				}
+				
+			}
+			
+			<span style="color: #008800; font-weight: bold">var</span> p2 <span style="color: #333333">=</span> <span style="color: #008800; font-weight: bold">new</span> Person2(<span style="background-color: #fff0f0">&quot;Fred&quot;</span>, <span style="background-color: #fff0f0">&quot;Smith&quot;</span>);
+			console.log(p2.getFullName());
+			<span style="color: #888888">// Output the object (directory tree structure)</span>
+			cosole.dir(p2);			
+			console.log(<span style="color: #008800; font-weight: bold">typeof</span> Person2); <span style="color: #888888">// Will still return as function even though it is defined as a Class.</span>
+			
+			
+			<span style="color: #888888">// Classes - New Syntax With Internal Use Properties (Property Accessors).</span>
+			<span style="color: #888888">// Example includes a Static function to create a new object as well as Inheritance		</span>
+			<span style="color: #888888">// 	</span>
+			<span style="color: #008800; font-weight: bold">class</span> Person3 {
+				
+				constructor(firstName, lastName) {
+					<span style="color: #888888">// _ is a convention only used to indicate internal use only properties even though JS does not support private or protected members</span>
+					<span style="color: #008800; font-weight: bold">this</span>._firstName <span style="color: #333333">=</span> firstName; 
+					<span style="color: #008800; font-weight: bold">this</span>._lastName <span style="color: #333333">=</span> lastName;					
+				}
+				
+				<span style="color: #888888">// Property Accessors</span>
+				get firstName() {
+					console.log(<span style="background-color: #fff0f0">&quot;get firstName&quot;</span>);
+					<span style="color: #008800; font-weight: bold">return</span> <span style="color: #008800; font-weight: bold">this</span>._firstName;
+				}
+				
+				set firstName(fn) {
+					<span style="color: #008800; font-weight: bold">this</span>._firstName <span style="color: #333333">=</span> fn;
+				}
+				
+				get lastName() {
+					console.log(<span style="background-color: #fff0f0">&quot;get lastName&quot;</span>);
+					<span style="color: #008800; font-weight: bold">return</span> <span style="color: #008800; font-weight: bold">this</span>._lastName;
+				}
+				
+				set lastName(ln) {
+					<span style="color: #008800; font-weight: bold">this</span>._lastName <span style="color: #333333">=</span> ln;
+				}				
+				
+				getFullName() {
+					<span style="color: #008800; font-weight: bold">return</span> <span style="color: #008800; font-weight: bold">this</span>.firstName <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &#39;</span> <span style="color: #333333">+</span> <span style="color: #008800; font-weight: bold">this</span>.lastName;
+				}
+				
+				<span style="color: #888888">// Static Function</span>
+				<span style="color: #008800; font-weight: bold">static</span> create(firstName, lastName) {
+					<span style="color: #008800; font-weight: bold">return</span> <span style="color: #008800; font-weight: bold">new</span> Person(firstName, lastName);
+				}
+				
+			}
+			
+			<span style="color: #008800; font-weight: bold">class</span> Student <span style="color: #008800; font-weight: bold">extends</span> Person3 {
+				
+				constructor(studentId, firstName, lastName) {
+					<span style="color: #008800; font-weight: bold">super</span>(firstName, lastName); <span style="color: #888888">// Student Constructor must call &#39;super&#39; to set the object that Student extends.</span>
+					<span style="color: #008800; font-weight: bold">this</span>._studentId <span style="color: #333333">=</span> studentId;
+				}
+				
+				get studentId() {
+					<span style="color: #008800; font-weight: bold">return</span> <span style="color: #008800; font-weight: bold">this</span>._studentId;
+				}
+				
+				set studentId(sid) {
+					<span style="color: #008800; font-weight: bold">this</span>._studentId <span style="color: #333333">=</span> sid;
+				}
+				
+				getRecordTitle() {
+					<span style="color: #008800; font-weight: bold">return</span> <span style="color: #008800; font-weight: bold">this</span>.studentId <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot; &quot;</span> <span style="color: #333333">+</span> <span style="color: #008800; font-weight: bold">this</span>.lastName <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot;, &quot;</span> <span style="color: #333333">+</span> <span style="color: #008800; font-weight: bold">this</span>.firstName;
+				}
+			}
+			
+			<span style="color: #888888">// var p3 = new Person3(&quot;Fred&quot;, &quot;Smith&quot;);</span>
+			<span style="color: #888888">// Create new object via call to Static function </span>
+			<span style="color: #008800; font-weight: bold">var</span> p3 <span style="color: #333333">=</span> Person3.create(<span style="background-color: #fff0f0">&quot;Fred&quot;</span>, <span style="background-color: #fff0f0">&quot;Smith&quot;</span>); 
+			console.log(p3.getFullName());
+			<span style="color: #888888">// Output the object (directory tree structure)</span>
+			cosole.dir(p3);		
+			
+			<span style="color: #888888">// Example of Inheritance</span>
+			<span style="color: #008800; font-weight: bold">var</span> s <span style="color: #333333">=</span> <span style="color: #008800; font-weight: bold">new</span> Student(<span style="color: #0000DD; font-weight: bold">1</span>, <span style="background-color: #fff0f0">&quot;Fred&quot;</span>, <span style="background-color: #fff0f0">&quot;Smith&quot;</span>);	
+			console.log(s.getRecordTitle());
+			console.log(s.getFullName()); <span style="color: #888888">// Call method from class that Student extends (Person3)</span>
+			
+			
+			<span style="color: #888888">// Generators</span>
+			
+			<span style="color: #888888">// Typical way of processing an array</span>
+			<span style="color: #888888">/*</span>
+<span style="color: #888888">				function numbers() {</span>
+<span style="color: #888888">				</span>
+<span style="color: #888888">				var nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];</span>
+<span style="color: #888888">				</span>
+<span style="color: #888888">				for (var t = 0; t &lt; nums.length; t++) {</span>
+<span style="color: #888888">						nums[t] = nums[t] * 2;</span>
+<span style="color: #888888">				}</span>
+<span style="color: #888888">				</span>
+<span style="color: #888888">				return nums;</span>
+<span style="color: #888888">			}</span>
+<span style="color: #888888">			</span>
+<span style="color: #888888">			console.dir(numbers());</span>
+<span style="color: #888888">			*/</span>
+			
+			<span style="color: #888888">// Using Generators</span>
+			<span style="color: #008800; font-weight: bold">function</span><span style="color: #333333">*</span> numbers() {
+				
+				<span style="color: #008800; font-weight: bold">var</span> nums <span style="color: #333333">=</span> [<span style="color: #0000DD; font-weight: bold">0</span>, <span style="color: #0000DD; font-weight: bold">1</span>, <span style="color: #0000DD; font-weight: bold">2</span>, <span style="color: #0000DD; font-weight: bold">3</span>, <span style="color: #0000DD; font-weight: bold">4</span>, <span style="color: #0000DD; font-weight: bold">5</span>, <span style="color: #0000DD; font-weight: bold">6</span>, <span style="color: #0000DD; font-weight: bold">7</span>, <span style="color: #0000DD; font-weight: bold">8</span>, <span style="color: #0000DD; font-weight: bold">9</span>];
+				
+				<span style="color: #008800; font-weight: bold">for</span> (<span style="color: #008800; font-weight: bold">var</span> t <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">0</span>; t <span style="color: #333333">&lt;</span> nums.length; t<span style="color: #333333">++</span>) {
+					console.log(<span style="background-color: #fff0f0">&quot;running an iteration&quot;</span>);
+						nums[t] <span style="color: #333333">=</span> nums[t] <span style="color: #333333">*</span> <span style="color: #0000DD; font-weight: bold">2</span>;
+						yield nums[t];
+				}
+				
+				<span style="color: #888888">//return nums;</span>
+			}	
+			
+			<span style="color: #008800; font-weight: bold">var</span> numGen <span style="color: #333333">=</span> numbers();
+			
+			<span style="color: #008800; font-weight: bold">for</span> (<span style="color: #008800; font-weight: bold">var</span> num of numGen) {
+				console.log(<span style="background-color: #fff0f0">&quot;Num: &quot;</span> <span style="color: #333333">+</span> num);
+			}
+			
+			<span style="color: #888888">//console.log(numGen.next().value);								</span>
+			<span style="color: #888888">//console.log(numGen.next().value);</span>
+			<span style="color: #888888">//console.log(numGen.next().value);</span>
+			<span style="color: #888888">//console.log(numGen.next().value);</span>
+			<span style="color: #888888">//console.log(numGen.next().value);</span>
+			
+	<span style="color: #333333">&lt;</span><span>/script&gt;</span>
+</pre></div>
+
+
+		<br /><br /><br />
+					
+		</div>
+							
+	</body>	
+</html>
